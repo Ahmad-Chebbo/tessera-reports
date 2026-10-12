@@ -13,12 +13,12 @@ class ProfitReportService
      *
      * @return Collection<int, array{product_id: int, product_name: string, total_quantity: int, total_revenue: float, total_cost: float, profit: float, margin_percentage: float}>
      */
-    public function getReport(int $companyId, Carbon $from, Carbon $to, ?int $branchId = null): Collection
+    public function getReport(int $tenantId, Carbon $from, Carbon $to, ?int $branchId = null): Collection
     {
         $query = OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->where('orders.company_id', $companyId)
+            ->where('orders.tenant_id', $tenantId)
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()]);
 
@@ -59,9 +59,9 @@ class ProfitReportService
      *
      * @return array{total_revenue: float, total_cost: float, total_profit: float, overall_margin: float}
      */
-    public function getSummary(int $companyId, Carbon $from, Carbon $to, ?int $branchId = null): array
+    public function getSummary(int $tenantId, Carbon $from, Carbon $to, ?int $branchId = null): array
     {
-        $report = $this->getReport($companyId, $from, $to, $branchId);
+        $report = $this->getReport($tenantId, $from, $to, $branchId);
 
         $totalRevenue = $report->sum('total_revenue');
         $totalCost = $report->sum('total_cost');

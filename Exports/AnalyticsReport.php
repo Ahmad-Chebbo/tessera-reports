@@ -51,9 +51,9 @@ abstract class AnalyticsReport extends ReportDefinition
         return str_replace('_', '-', $this->key())."_{$from->toDateString()}_{$to->toDateString()}";
     }
 
-    public function filterRules(int $companyId): array
+    public function filterRules(int $tenantId): array
     {
-        return $this->branchRules($companyId);
+        return $this->branchRules($tenantId);
     }
 
     /**

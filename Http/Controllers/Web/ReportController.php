@@ -4,11 +4,11 @@ namespace App\Modules\Reports\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Category;
-use App\Modules\Company\Services\BranchAccess;
 use App\Modules\Reports\Http\Requests\ReportRequest;
 use App\Modules\Reports\Services\SalesAnalyticsService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Tenant\Services\BranchAccess;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +28,7 @@ class ReportController extends Controller
         $dateTo = $to->toDateString();
 
         $orders = Order::query()
-            ->where('company_id', $user->company_id)
+            ->where('tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
             ->where('status', 'completed')
             ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -40,7 +40,7 @@ class ReportController extends Controller
 
         // Daily sales chart data
         $dailySales = Order::query()
-            ->where('company_id', $user->company_id)
+            ->where('tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
             ->where('status', 'completed')
             ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -57,7 +57,7 @@ class ReportController extends Controller
         $topProducts = OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->where('orders.company_id', $user->company_id)
+            ->where('orders.tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('orders.branch_id', $branchId))
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -81,9 +81,9 @@ class ReportController extends Controller
             'dailySales' => $dailySales,
             'topProducts' => $topProducts,
             'charts' => [
-                'daily' => $this->analytics->dailySeries($user->company_id, $from, $to, $branchId),
-                'topProducts' => $this->analytics->topProducts($user->company_id, $from, $to, branchId: $branchId, limit: 8),
-                'categories' => $this->analytics->categoryShare($user->company_id, $from, $to, branchId: $branchId, limit: 6),
+                'daily' => $this->analytics->dailySeries($user->tenant_id, $from, $to, $branchId),
+                'topProducts' => $this->analytics->topProducts($user->tenant_id, $from, $to, branchId: $branchId, limit: 8),
+                'categories' => $this->analytics->categoryShare($user->tenant_id, $from, $to, branchId: $branchId, limit: 6),
             ],
             'filters' => [
                 'date_from' => $dateFrom,
@@ -109,7 +109,7 @@ class ReportController extends Controller
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-            ->where('orders.company_id', $user->company_id)
+            ->where('orders.tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('orders.branch_id', $branchId))
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -134,7 +134,7 @@ class ReportController extends Controller
 
         $items = $query->orderByDesc('total_revenue')->paginate(25)->withQueryString();
 
-        $categories = Category::where('company_id', $user->company_id)
+        $categories = Category::where('tenant_id', $user->tenant_id)
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -150,8 +150,8 @@ class ReportController extends Controller
             'categories' => $categories,
             'totals' => $totals,
             'charts' => [
-                'topProducts' => $this->analytics->topProducts($user->company_id, $from, $to, branchId: $branchId, limit: 10, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
-                'categories' => $this->analytics->categoryShare($user->company_id, $from, $to, branchId: $branchId, limit: 6, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
+                'topProducts' => $this->analytics->topProducts($user->tenant_id, $from, $to, branchId: $branchId, limit: 10, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
+                'categories' => $this->analytics->categoryShare($user->tenant_id, $from, $to, branchId: $branchId, limit: 6, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
             ],
             'filters' => compact('dateFrom', 'dateTo', 'categoryId', 'search'),
             'presets' => $request->presets(),
@@ -174,7 +174,7 @@ class ReportController extends Controller
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-            ->where('orders.company_id', $user->company_id)
+            ->where('orders.tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('orders.branch_id', $branchId))
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -201,14 +201,14 @@ class ReportController extends Controller
 
         $products = $query->orderByDesc('total_profit')->paginate(25)->withQueryString();
 
-        $categories = Category::where('company_id', $user->company_id)
+        $categories = Category::where('tenant_id', $user->tenant_id)
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name']);
 
         $summary = OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.company_id', $user->company_id)
+            ->where('orders.tenant_id', $user->tenant_id)
             ->when($branchId, fn ($query) => $query->where('orders.branch_id', $branchId))
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()])
@@ -219,7 +219,7 @@ class ReportController extends Controller
         $canIncludeExpenses = $netProfit->available() && $user->can('view expenses');
         $includeExpenses = $request->boolean('include_expenses') && $canIncludeExpenses;
         $net = $includeExpenses && ! $categoryId && ! $search
-            ? $netProfit->forPeriod($user->company_id, $from, $to, $branchId ?: null)['totals']
+            ? $netProfit->forPeriod($user->tenant_id, $from, $to, $branchId ?: null)['totals']
             : null;
 
         $totalRevenue = (float) ($summary->total_revenue ?? 0);
@@ -236,8 +236,8 @@ class ReportController extends Controller
                 'profitMargin' => $totalRevenue > 0 ? round(($totalProfit / $totalRevenue) * 100, 2) : 0,
             ],
             'charts' => [
-                'daily' => $this->analytics->profitSeries($user->company_id, $from, $to, branchId: $branchId, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
-                'topProducts' => $this->analytics->topProducts($user->company_id, $from, $to, branchId: $branchId, limit: 10, by: 'profit', categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
+                'daily' => $this->analytics->profitSeries($user->tenant_id, $from, $to, branchId: $branchId, categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
+                'topProducts' => $this->analytics->topProducts($user->tenant_id, $from, $to, branchId: $branchId, limit: 10, by: 'profit', categoryId: $categoryId ? (int) $categoryId : null, search: $search, netOfDiscounts: false),
             ],
             'net' => $net,
             'filters' => [...compact('dateFrom', 'dateTo', 'categoryId', 'search'), 'includeExpenses' => $includeExpenses],

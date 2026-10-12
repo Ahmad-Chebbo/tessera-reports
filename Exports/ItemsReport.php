@@ -17,11 +17,11 @@ class ItemsReport extends AnalyticsReport
         return 'items';
     }
 
-    public function filterRules(int $companyId): array
+    public function filterRules(int $tenantId): array
     {
         return [
-            ...$this->branchRules($companyId),
-            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('company_id', $companyId)],
+            ...$this->branchRules($tenantId),
+            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('tenant_id', $tenantId)],
             'search' => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -76,7 +76,7 @@ class ItemsReport extends AnalyticsReport
         $lines = parent::filterLines($context);
 
         if ($categoryId = $context->filter('category_id')) {
-            $lines[] = $context->t('filters.category', ['value' => Category::query()->where('company_id', $context->company->id)->whereKey($categoryId)->value('name')]);
+            $lines[] = $context->t('filters.category', ['value' => Category::query()->where('tenant_id', $context->tenant->id)->whereKey($categoryId)->value('name')]);
         }
 
         if ($search = $context->filter('search')) {
@@ -99,7 +99,7 @@ class ItemsReport extends AnalyticsReport
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
-            ->where('orders.company_id', $context->company->id)
+            ->where('orders.tenant_id', $context->tenant->id)
             ->when($this->branchId($context), fn ($query, $branchId) => $query->where('orders.branch_id', $branchId))
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->endOfDay()])

@@ -4,13 +4,13 @@ namespace App\Modules\Reports\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Company\Models\Branch;
-use App\Modules\Company\Services\BranchAccess;
 use App\Modules\Reports\Http\Requests\DashboardRequest;
 use App\Modules\Reports\Services\SalesAnalyticsService;
 use App\Modules\Sales\Enums\OrderStatus;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Team\Models\User;
+use App\Modules\Tenant\Models\Branch;
+use App\Modules\Tenant\Services\BranchAccess;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,11 +24,11 @@ class DashboardController extends Controller
     public function index(DashboardRequest $request): Response
     {
         $user = $request->user();
-        $companyId = $user->company_id;
+        $tenantId = $user->tenant_id;
         $branchId = $this->access->effective($user, $request->query('branch_id'));
 
-        // If user has no company, show empty dashboard
-        if (! $companyId) {
+        // If user has no tenant, show empty dashboard
+        if (! $tenantId) {
             return Inertia::render('Dashboard', [
                 'stats' => [
                     'todaySales' => 0,
@@ -44,10 +44,10 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('Dashboard', [
-            'stats' => fn () => $this->stats($companyId, $branchId),
-            'recentOrders' => fn () => $this->recentOrders($companyId, $branchId),
+            'stats' => fn () => $this->stats($tenantId, $branchId),
+            'recentOrders' => fn () => $this->recentOrders($tenantId, $branchId),
             'widgets' => fn () => $this->widgets($user, $branchId),
-            'charts' => fn () => $this->charts($companyId, $branchId, $request->period()),
+            'charts' => fn () => $this->charts($tenantId, $branchId, $request->period()),
             'filters' => ['branch_id' => $this->access->canSeeAll($user) ? $branchId : null],
         ]);
     }
@@ -55,10 +55,10 @@ class DashboardController extends Controller
     /**
      * @return array{todaySales: float, todayOrders: int, activeProducts: int, branches: int}
      */
-    private function stats(int $companyId, ?int $branchId): array
+    private function stats(int $tenantId, ?int $branchId): array
     {
         $todayOrdersQuery = Order::query()
-            ->where('company_id', $companyId)
+            ->where('tenant_id', $tenantId)
             ->where('status', OrderStatus::Completed)
             ->whereDate('created_at', now()->startOfDay());
 
@@ -69,18 +69,18 @@ class DashboardController extends Controller
         return [
             'todaySales' => (float) $todayOrdersQuery->sum('total'),
             'todayOrders' => $todayOrdersQuery->count(),
-            'activeProducts' => Product::where('company_id', $companyId)->where('is_active', true)->count(),
-            'branches' => $branchId ? 1 : Branch::where('company_id', $companyId)->count(),
+            'activeProducts' => Product::where('tenant_id', $tenantId)->where('is_active', true)->count(),
+            'branches' => $branchId ? 1 : Branch::where('tenant_id', $tenantId)->count(),
         ];
     }
 
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    private function recentOrders(int $companyId, ?int $branchId)
+    private function recentOrders(int $tenantId, ?int $branchId)
     {
         $query = Order::query()
-            ->where('company_id', $companyId)
+            ->where('tenant_id', $tenantId)
             ->with(['cashier:id,name'])
             ->orderByDesc('created_at')
             ->limit(10);
@@ -103,18 +103,18 @@ class DashboardController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function charts(int $companyId, ?int $branchId, int $period): array
+    private function charts(int $tenantId, ?int $branchId, int $period): array
     {
         $to = now()->startOfDay();
         $from = $to->copy()->subDays($period - 1);
 
         return [
             'period' => $period,
-            'series' => $this->analytics->dailySeries($companyId, $from, $to, $branchId),
-            'categories' => $this->analytics->categoryShare($companyId, $from, $to, $branchId, 5),
-            'payment' => $this->analytics->paymentSplit($companyId, $from, $to, $branchId),
-            'topProducts' => $this->analytics->topProducts($companyId, $from, $to, $branchId, 5),
-            'comparison' => $this->analytics->comparison($companyId, $from, $to, $branchId),
+            'series' => $this->analytics->dailySeries($tenantId, $from, $to, $branchId),
+            'categories' => $this->analytics->categoryShare($tenantId, $from, $to, $branchId, 5),
+            'payment' => $this->analytics->paymentSplit($tenantId, $from, $to, $branchId),
+            'topProducts' => $this->analytics->topProducts($tenantId, $from, $to, $branchId, 5),
+            'comparison' => $this->analytics->comparison($tenantId, $from, $to, $branchId),
         ];
     }
 

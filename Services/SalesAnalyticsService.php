@@ -21,9 +21,9 @@ class SalesAnalyticsService
      *
      * @return list<array{date: string, revenue: float, orders: int}>
      */
-    public function dailySeries(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
+    public function dailySeries(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
     {
-        $rows = $this->orders($companyId, $from, $to, $branchId, OrderStatus::Completed)
+        $rows = $this->orders($tenantId, $from, $to, $branchId, OrderStatus::Completed)
             ->selectRaw('DATE(created_at) as day, SUM(total) as revenue, COUNT(*) as orders')
             ->groupByRaw('DATE(created_at)')
             ->get()
@@ -46,7 +46,7 @@ class SalesAnalyticsService
      * @return list<array{date: string, revenue: float, cost: float, profit: float}>
      */
     public function profitSeries(
-        int $companyId,
+        int $tenantId,
         CarbonInterface $from,
         CarbonInterface $to,
         ?int $branchId = null,
@@ -56,7 +56,7 @@ class SalesAnalyticsService
     ): array {
         $revenue = $this->revenueExpression($netOfDiscounts);
 
-        $rows = $this->items($companyId, $from, $to, $branchId, $categoryId, $search)
+        $rows = $this->items($tenantId, $from, $to, $branchId, $categoryId, $search)
             ->selectRaw("DATE(orders.created_at) as day, SUM({$revenue}) as revenue, SUM(order_items.cost_price * order_items.quantity) as cost")
             ->groupByRaw('DATE(orders.created_at)')
             ->get()
@@ -81,7 +81,7 @@ class SalesAnalyticsService
      * @return list<array{id: int, name: string, revenue: float, quantity: float, profit: float}>
      */
     public function topProducts(
-        int $companyId,
+        int $tenantId,
         CarbonInterface $from,
         CarbonInterface $to,
         ?int $branchId = null,
@@ -99,7 +99,7 @@ class SalesAnalyticsService
             default => "SUM({$revenue})",
         };
 
-        return $this->items($companyId, $from, $to, $branchId, $categoryId, $search)
+        return $this->items($tenantId, $from, $to, $branchId, $categoryId, $search)
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->selectRaw("products.id as id, products.name as name, SUM(order_items.quantity) as quantity, SUM({$revenue}) as revenue, SUM(order_items.cost_price * order_items.quantity) as cost")
             ->groupBy('products.id', 'products.name')
@@ -123,7 +123,7 @@ class SalesAnalyticsService
      * @return list<array{name: string, key: string|null, revenue: float}>
      */
     public function categoryShare(
-        int $companyId,
+        int $tenantId,
         CarbonInterface $from,
         CarbonInterface $to,
         ?int $branchId = null,
@@ -134,7 +134,7 @@ class SalesAnalyticsService
     ): array {
         $revenue = $this->revenueExpression($netOfDiscounts);
 
-        $rows = $this->items($companyId, $from, $to, $branchId, $categoryId, $search)
+        $rows = $this->items($tenantId, $from, $to, $branchId, $categoryId, $search)
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
             ->selectRaw("categories.name as name, SUM({$revenue}) as revenue")
@@ -164,9 +164,9 @@ class SalesAnalyticsService
      *
      * @return array{paid: float, credit: float}
      */
-    public function paymentSplit(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
+    public function paymentSplit(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
     {
-        $totals = $this->orders($companyId, $from, $to, $branchId, OrderStatus::Completed, OrderStatus::Debt)
+        $totals = $this->orders($tenantId, $from, $to, $branchId, OrderStatus::Completed, OrderStatus::Debt)
             ->selectRaw('status, SUM(total) as revenue')
             ->groupBy('status')
             ->pluck('revenue', 'status');
@@ -182,14 +182,14 @@ class SalesAnalyticsService
      *
      * @return array{revenue: array{current: float, previous: float, change: float|null}, orders: array{current: int, previous: int, change: float|null}}
      */
-    public function comparison(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
+    public function comparison(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId = null): array
     {
         $length = (int) $from->copy()->startOfDay()->diffInDays($to->copy()->startOfDay()) + 1;
         $previousTo = $from->copy()->startOfDay()->subDay();
         $previousFrom = $previousTo->copy()->subDays($length - 1);
 
-        $current = $this->totals($companyId, $from, $to, $branchId);
-        $previous = $this->totals($companyId, $previousFrom, $previousTo, $branchId);
+        $current = $this->totals($tenantId, $from, $to, $branchId);
+        $previous = $this->totals($tenantId, $previousFrom, $previousTo, $branchId);
 
         return [
             'revenue' => [
@@ -208,9 +208,9 @@ class SalesAnalyticsService
     /**
      * @return array{revenue: float, orders: int}
      */
-    private function totals(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId): array
+    private function totals(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId): array
     {
-        $row = $this->orders($companyId, $from, $to, $branchId, OrderStatus::Completed)
+        $row = $this->orders($tenantId, $from, $to, $branchId, OrderStatus::Completed)
             ->selectRaw('SUM(total) as revenue, COUNT(*) as orders')
             ->first();
 
@@ -232,10 +232,10 @@ class SalesAnalyticsService
     /**
      * @return Builder<Order>
      */
-    private function orders(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId, OrderStatus ...$statuses): Builder
+    private function orders(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId, OrderStatus ...$statuses): Builder
     {
         return Order::query()
-            ->where('company_id', $companyId)
+            ->where('tenant_id', $tenantId)
             ->whereIn('status', array_map(fn (OrderStatus $status) => $status->value, $statuses))
             ->when($branchId, fn (Builder $query) => $query->where('branch_id', $branchId))
             ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]);
@@ -244,11 +244,11 @@ class SalesAnalyticsService
     /**
      * @return Builder<OrderItem>
      */
-    private function items(int $companyId, CarbonInterface $from, CarbonInterface $to, ?int $branchId, ?int $categoryId = null, ?string $search = null): Builder
+    private function items(int $tenantId, CarbonInterface $from, CarbonInterface $to, ?int $branchId, ?int $categoryId = null, ?string $search = null): Builder
     {
         return OrderItem::query()
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.company_id', $companyId)
+            ->where('orders.tenant_id', $tenantId)
             ->where('orders.status', OrderStatus::Completed->value)
             ->when($branchId, fn (Builder $query) => $query->where('orders.branch_id', $branchId))
             ->when($categoryId, fn (Builder $query) => $query
