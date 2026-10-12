@@ -1,8 +1,8 @@
 <?php
 
-use App\Modules\Company\Models\Branch;
-use App\Modules\Company\Models\Company;
 use App\Modules\Team\Models\User;
+use App\Modules\Tenant\Models\Branch;
+use App\Modules\Tenant\Models\Tenant;
 use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Permission;
@@ -14,9 +14,9 @@ function presetsOf(Assert $page): array
 
 beforeEach(function () {
     Permission::findOrCreate('view reports');
-    $this->company = Company::factory()->create(['timezone' => 'UTC']);
-    $branch = Branch::factory()->create(['company_id' => $this->company->id]);
-    $this->user = User::factory()->create(['company_id' => $this->company->id, 'branch_id' => $branch->id])->givePermissionTo('view reports');
+    $this->tenant = Tenant::factory()->create(['timezone' => 'UTC']);
+    $branch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+    $this->user = User::factory()->create(['tenant_id' => $this->tenant->id, 'branch_id' => $branch->id])->givePermissionTo('view reports');
     $this->travelTo(CarbonImmutable::parse('2026-10-14 10:00:00', 'UTC'));
 });
 
@@ -46,8 +46,8 @@ it('computes the periods from the shop day', function () {
         });
 });
 
-it('uses the company timezone to decide what today is', function () {
-    $this->company->update(['timezone' => 'Pacific/Auckland']);
+it('uses the tenant timezone to decide what today is', function () {
+    $this->tenant->update(['timezone' => 'Pacific/Auckland']);
     $this->travelTo(CarbonImmutable::parse('2026-10-14 23:00:00', 'UTC'));
 
     $this->actingAs($this->user)->get(route('reports.sales'))

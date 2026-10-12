@@ -5,10 +5,10 @@
     "license": "proprietary",
     "require": {
         "php": "^8.4",
-        "tessera/tessera-engine": "^2.0",
-        "tessera/tessera-saas": "^2.0",
-        "tessera/tessera-catalog": "^2.0",
-        "tessera/tessera-sales": "^2.0"
+        "tessera/tessera-engine": "^3.0",
+        "tessera/tessera-tenant": "^3.0",
+        "tessera/tessera-catalog": "^3.0",
+        "tessera/tessera-sales": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -22,7 +22,7 @@
             ]
         },
         "branch-alias": {
-            "dev-main": "2.x-dev"
+            "dev-main": "3.x-dev"
         }
     },
     "replace": {

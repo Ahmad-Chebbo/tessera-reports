@@ -73,7 +73,7 @@ class SalesReport extends AnalyticsReport
             [$from, $to] = $this->range($context);
 
             return Order::query()
-                ->where('company_id', $context->company->id)
+                ->where('tenant_id', $context->tenant->id)
                 ->when($this->branchId($context), fn ($query, $branchId) => $query->where('branch_id', $branchId))
                 ->where('status', 'completed')
                 ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])

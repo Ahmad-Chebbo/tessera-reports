@@ -2,12 +2,12 @@
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
-use App\Modules\Company\Models\Branch;
-use App\Modules\Company\Models\Company;
 use App\Modules\Reports\Services\SalesAnalyticsService;
 use App\Modules\Sales\Enums\OrderStatus;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Team\Models\User;
+use App\Modules\Tenant\Models\Branch;
+use App\Modules\Tenant\Models\Tenant;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
@@ -43,18 +43,18 @@ function analyticsOrder(array $order, array $items = [], ?Carbon $at = null): Or
 beforeEach(function () {
     Carbon::setTestNow('2026-05-15 12:00:00');
 
-    $this->company = Company::factory()->create(['currency' => 'USD']);
-    $this->branch = Branch::factory()->create(['company_id' => $this->company->id]);
-    $this->otherBranch = Branch::factory()->create(['company_id' => $this->company->id]);
-    $this->user = User::factory()->create(['company_id' => $this->company->id, 'branch_id' => $this->branch->id]);
+    $this->tenant = Tenant::factory()->create(['currency' => 'USD']);
+    $this->branch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+    $this->otherBranch = Branch::factory()->create(['tenant_id' => $this->tenant->id]);
+    $this->user = User::factory()->create(['tenant_id' => $this->tenant->id, 'branch_id' => $this->branch->id]);
 
-    $this->drinks = Category::factory()->create(['company_id' => $this->company->id, 'name' => 'Drinks']);
-    $this->food = Category::factory()->create(['company_id' => $this->company->id, 'name' => 'Food']);
-    $this->cola = Product::factory()->create(['company_id' => $this->company->id, 'category_id' => $this->drinks->id, 'name' => 'Cola']);
-    $this->burger = Product::factory()->create(['company_id' => $this->company->id, 'category_id' => $this->food->id, 'name' => 'Burger']);
+    $this->drinks = Category::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Drinks']);
+    $this->food = Category::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Food']);
+    $this->cola = Product::factory()->create(['tenant_id' => $this->tenant->id, 'category_id' => $this->drinks->id, 'name' => 'Cola']);
+    $this->burger = Product::factory()->create(['tenant_id' => $this->tenant->id, 'category_id' => $this->food->id, 'name' => 'Burger']);
 
     $this->base = [
-        'company_id' => $this->company->id,
+        'tenant_id' => $this->tenant->id,
         'branch_id' => $this->branch->id,
         'cashier_id' => $this->user->id,
     ];
@@ -68,14 +68,14 @@ afterEach(function () {
     Carbon::setTestNow();
 });
 
-it('builds a zero-filled daily revenue series counting only completed orders of the company', function () {
+it('builds a zero-filled daily revenue series counting only completed orders of the tenant', function () {
     analyticsOrder($this->base + ['total' => 30], [], Carbon::parse('2026-05-10 09:00'));
     analyticsOrder($this->base + ['total' => 20], [], Carbon::parse('2026-05-10 18:00'));
     analyticsOrder($this->base + ['total' => 50, 'status' => OrderStatus::Voided], [], Carbon::parse('2026-05-11'));
     analyticsOrder($this->base + ['total' => 70, 'status' => OrderStatus::Debt], [], Carbon::parse('2026-05-12'));
-    analyticsOrder(['company_id' => Company::factory()->create()->id, 'branch_id' => Branch::factory()->create()->id, 'cashier_id' => $this->user->id, 'total' => 999], [], Carbon::parse('2026-05-10'));
+    analyticsOrder(['tenant_id' => Tenant::factory()->create()->id, 'branch_id' => Branch::factory()->create()->id, 'cashier_id' => $this->user->id, 'total' => 999], [], Carbon::parse('2026-05-10'));
 
-    $series = $this->analytics->dailySeries($this->company->id, $this->from, $this->to);
+    $series = $this->analytics->dailySeries($this->tenant->id, $this->from, $this->to);
 
     expect($series)->toHaveCount(7)
         ->and($series[0])->toBe(['date' => '2026-05-09', 'revenue' => 0.0, 'orders' => 0])
@@ -87,7 +87,7 @@ it('builds a zero-filled daily revenue series counting only completed orders of 
 it('includes the whole last day of the range', function () {
     analyticsOrder($this->base + ['total' => 12], [], Carbon::parse('2026-05-15 23:59:00'));
 
-    $series = $this->analytics->dailySeries($this->company->id, $this->from, $this->to);
+    $series = $this->analytics->dailySeries($this->tenant->id, $this->from, $this->to);
 
     expect(end($series))->toBe(['date' => '2026-05-15', 'revenue' => 12.0, 'orders' => 1]);
 });
@@ -96,8 +96,8 @@ it('can be limited to one branch', function () {
     analyticsOrder($this->base + ['total' => 10], [], Carbon::parse('2026-05-10'));
     analyticsOrder(array_merge($this->base, ['branch_id' => $this->otherBranch->id, 'total' => 25]), [], Carbon::parse('2026-05-10'));
 
-    $all = $this->analytics->dailySeries($this->company->id, $this->from, $this->to);
-    $one = $this->analytics->dailySeries($this->company->id, $this->from, $this->to, $this->branch->id);
+    $all = $this->analytics->dailySeries($this->tenant->id, $this->from, $this->to);
+    $one = $this->analytics->dailySeries($this->tenant->id, $this->from, $this->to, $this->branch->id);
 
     expect($all[1]['revenue'])->toBe(35.0)
         ->and($one[1]['revenue'])->toBe(10.0);
@@ -109,7 +109,7 @@ it('builds a profit series with revenue, cost and profit per day', function () {
         ['product_id' => $this->burger->id, 'quantity' => 1, 'total' => 40, 'cost_price' => 25],
     ], Carbon::parse('2026-05-12'));
 
-    $series = $this->analytics->profitSeries($this->company->id, $this->from, $this->to);
+    $series = $this->analytics->profitSeries($this->tenant->id, $this->from, $this->to);
     $day = collect($series)->firstWhere('date', '2026-05-12');
 
     expect($order)->not->toBeNull()
@@ -124,10 +124,10 @@ it('ranks top products by revenue, quantity or profit', function () {
         ['product_id' => $this->burger->id, 'quantity' => 2, 'total' => 70, 'cost_price' => 5],
     ], Carbon::parse('2026-05-12'));
 
-    $byRevenue = $this->analytics->topProducts($this->company->id, $this->from, $this->to, by: 'revenue');
-    $byQuantity = $this->analytics->topProducts($this->company->id, $this->from, $this->to, by: 'quantity');
-    $byProfit = $this->analytics->topProducts($this->company->id, $this->from, $this->to, by: 'profit');
-    $limited = $this->analytics->topProducts($this->company->id, $this->from, $this->to, limit: 1);
+    $byRevenue = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to, by: 'revenue');
+    $byQuantity = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to, by: 'quantity');
+    $byProfit = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to, by: 'profit');
+    $limited = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to, limit: 1);
 
     expect(array_column($byRevenue, 'name'))->toBe(['Burger', 'Cola'])
         ->and(array_column($byQuantity, 'name'))->toBe(['Cola', 'Burger'])
@@ -144,11 +144,11 @@ it('ignores voided and credit orders when ranking products', function () {
         ['product_id' => $this->burger->id, 'total' => 25],
     ], Carbon::parse('2026-05-12'));
 
-    expect($this->analytics->topProducts($this->company->id, $this->from, $this->to))->toBe([]);
+    expect($this->analytics->topProducts($this->tenant->id, $this->from, $this->to))->toBe([]);
 });
 
 it('groups revenue by category, folding the tail into Other and naming missing categories', function () {
-    $loose = Product::factory()->create(['company_id' => $this->company->id, 'category_id' => null, 'name' => 'Loose']);
+    $loose = Product::factory()->create(['tenant_id' => $this->tenant->id, 'category_id' => null, 'name' => 'Loose']);
 
     analyticsOrder($this->base + ['total' => 100], [
         ['product_id' => $this->cola->id, 'total' => 50],
@@ -156,8 +156,8 @@ it('groups revenue by category, folding the tail into Other and naming missing c
         ['product_id' => $loose->id, 'total' => 20],
     ], Carbon::parse('2026-05-12'));
 
-    $all = $this->analytics->categoryShare($this->company->id, $this->from, $this->to, limit: 5);
-    $folded = $this->analytics->categoryShare($this->company->id, $this->from, $this->to, limit: 2);
+    $all = $this->analytics->categoryShare($this->tenant->id, $this->from, $this->to, limit: 5);
+    $folded = $this->analytics->categoryShare($this->tenant->id, $this->from, $this->to, limit: 2);
 
     expect($all)->toBe([
         ['name' => 'Drinks', 'key' => null, 'revenue' => 50.0],
@@ -174,7 +174,7 @@ it('splits revenue into paid and on-credit, excluding voided orders', function (
     analyticsOrder($this->base + ['total' => 45, 'status' => OrderStatus::Debt, 'payment_type' => 'debt', 'debt_status' => 'unpaid'], [], Carbon::parse('2026-05-12'));
     analyticsOrder($this->base + ['total' => 99, 'status' => OrderStatus::Voided], [], Carbon::parse('2026-05-12'));
 
-    expect($this->analytics->paymentSplit($this->company->id, $this->from, $this->to))
+    expect($this->analytics->paymentSplit($this->tenant->id, $this->from, $this->to))
         ->toBe(['paid' => 80.0, 'credit' => 45.0]);
 });
 
@@ -183,7 +183,7 @@ it('compares the period with the one before it', function () {
     analyticsOrder($this->base + ['total' => 100], [], Carbon::parse('2026-05-04'));
     analyticsOrder($this->base + ['total' => 100], [], Carbon::parse('2026-05-05'));
 
-    $comparison = $this->analytics->comparison($this->company->id, $this->from, $this->to);
+    $comparison = $this->analytics->comparison($this->tenant->id, $this->from, $this->to);
 
     expect($comparison['revenue'])->toBe(['current' => 150.0, 'previous' => 200.0, 'change' => -25.0])
         ->and($comparison['orders'])->toBe(['current' => 1, 'previous' => 2, 'change' => -50.0]);
@@ -192,7 +192,7 @@ it('compares the period with the one before it', function () {
 it('reports no percentage change when the previous period had no sales', function () {
     analyticsOrder($this->base + ['total' => 150], [], Carbon::parse('2026-05-12'));
 
-    $comparison = $this->analytics->comparison($this->company->id, $this->from, $this->to);
+    $comparison = $this->analytics->comparison($this->tenant->id, $this->from, $this->to);
 
     expect($comparison['revenue'])->toBe(['current' => 150.0, 'previous' => 0.0, 'change' => null]);
 });
@@ -291,12 +291,12 @@ it('spreads an order discount over its items so item charts match order revenue'
         ['product_id' => $this->cola->id, 'quantity' => 1, 'total' => 100, 'cost_price' => 20],
     ], Carbon::parse('2026-05-12'));
 
-    $net = $this->analytics->topProducts($this->company->id, $this->from, $this->to);
-    $gross = $this->analytics->topProducts($this->company->id, $this->from, $this->to, netOfDiscounts: false);
-    $categories = $this->analytics->categoryShare($this->company->id, $this->from, $this->to);
-    $profit = collect($this->analytics->profitSeries($this->company->id, $this->from, $this->to))->firstWhere('date', '2026-05-12');
-    $grossProfit = collect($this->analytics->profitSeries($this->company->id, $this->from, $this->to, netOfDiscounts: false))->firstWhere('date', '2026-05-12');
-    $daily = collect($this->analytics->dailySeries($this->company->id, $this->from, $this->to))->firstWhere('date', '2026-05-12');
+    $net = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to);
+    $gross = $this->analytics->topProducts($this->tenant->id, $this->from, $this->to, netOfDiscounts: false);
+    $categories = $this->analytics->categoryShare($this->tenant->id, $this->from, $this->to);
+    $profit = collect($this->analytics->profitSeries($this->tenant->id, $this->from, $this->to))->firstWhere('date', '2026-05-12');
+    $grossProfit = collect($this->analytics->profitSeries($this->tenant->id, $this->from, $this->to, netOfDiscounts: false))->firstWhere('date', '2026-05-12');
+    $daily = collect($this->analytics->dailySeries($this->tenant->id, $this->from, $this->to))->firstWhere('date', '2026-05-12');
 
     expect($net[0]['revenue'])->toBe(90.0)
         ->and($net[0]['profit'])->toBe(70.0)
@@ -307,17 +307,17 @@ it('spreads an order discount over its items so item charts match order revenue'
         ->and($daily['revenue'])->toBe(90.0);
 });
 
-it('does not rank products from another company', function () {
-    $other = Company::factory()->create();
-    $otherBranch = Branch::factory()->create(['company_id' => $other->id]);
-    $otherProduct = Product::factory()->create(['company_id' => $other->id, 'name' => 'Rival']);
+it('does not rank products from another tenant', function () {
+    $other = Tenant::factory()->create();
+    $otherBranch = Branch::factory()->create(['tenant_id' => $other->id]);
+    $otherProduct = Product::factory()->create(['tenant_id' => $other->id, 'name' => 'Rival']);
 
-    analyticsOrder(['company_id' => $other->id, 'branch_id' => $otherBranch->id, 'cashier_id' => $this->user->id, 'total' => 500], [
+    analyticsOrder(['tenant_id' => $other->id, 'branch_id' => $otherBranch->id, 'cashier_id' => $this->user->id, 'total' => 500], [
         ['product_id' => $otherProduct->id, 'total' => 500],
     ], Carbon::parse('2026-05-12'));
 
-    expect($this->analytics->topProducts($this->company->id, $this->from, $this->to))->toBe([])
-        ->and($this->analytics->categoryShare($this->company->id, $this->from, $this->to))->toBe([]);
+    expect($this->analytics->topProducts($this->tenant->id, $this->from, $this->to))->toBe([])
+        ->and($this->analytics->categoryShare($this->tenant->id, $this->from, $this->to))->toBe([]);
 });
 
 it('narrows item charts with the report search filter', function () {
@@ -424,9 +424,9 @@ it('only computes the charts on a dashboard period change', function () {
     expect($tables)->not->toContain('stock_movements');
 });
 
-it('sends no charts for a user without a company', function () {
+it('sends no charts for a user without a tenant', function () {
     Permission::findOrCreate('view dashboard');
-    $loner = User::factory()->create(['company_id' => null, 'branch_id' => null]);
+    $loner = User::factory()->create(['tenant_id' => null, 'branch_id' => null]);
     $loner->givePermissionTo('view dashboard');
 
     $this->actingAs($loner)
