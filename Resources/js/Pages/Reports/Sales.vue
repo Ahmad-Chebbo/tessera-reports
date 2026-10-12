@@ -7,13 +7,13 @@ import { useI18n } from 'vue-i18n';
 import SidebarLayout from '@/Layouts/SidebarLayout.vue';
 import { useCurrency } from '@/Composables/useCurrency';
 import { ChartColumn, CircleDollarSign, FileText } from 'lucide-vue-next';
-import ChartCard from '@ahmad-chebbo/tessera-ui/Components/ChartCard.vue';
-import { categoryLabel } from '@ahmad-chebbo/tessera-ui/charts/labels';
-import TrendChart from '@ahmad-chebbo/tessera-ui/Components/TrendChart.vue';
-import BarChart from '@ahmad-chebbo/tessera-ui/Components/BarChart.vue';
-import DoughnutChart from '@ahmad-chebbo/tessera-ui/Components/DoughnutChart.vue';
-import DatePicker from '@ahmad-chebbo/tessera-ui/Components/DatePicker.vue';
-import PeriodPresets from '@ahmad-chebbo/tessera-ui/Components/PeriodPresets.vue';
+import ChartCard from '@tessera/tessera-ui/Components/ChartCard.vue';
+import { categoryLabel } from '@tessera/tessera-ui/charts/labels';
+import TrendChart from '@tessera/tessera-ui/Components/TrendChart.vue';
+import BarChart from '@tessera/tessera-ui/Components/BarChart.vue';
+import DoughnutChart from '@tessera/tessera-ui/Components/DoughnutChart.vue';
+import DatePicker from '@tessera/tessera-ui/Components/DatePicker.vue';
+import PeriodPresets from '@tessera/tessera-ui/Components/PeriodPresets.vue';
 
 const props = defineProps({
     presets: { type: Array, default: () => [] },

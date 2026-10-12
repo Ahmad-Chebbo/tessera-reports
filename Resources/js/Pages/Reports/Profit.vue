@@ -7,13 +7,13 @@ import { useI18n } from 'vue-i18n';
 import { useCurrency } from '@/Composables/useCurrency';
 import SidebarLayout from '@/Layouts/SidebarLayout.vue';
 import debounce from 'lodash/debounce';
-import Select from '@ahmad-chebbo/tessera-ui/Components/Select.vue';
-import DataTable from '@ahmad-chebbo/tessera-ui/Components/DataTable.vue';
-import ChartCard from '@ahmad-chebbo/tessera-ui/Components/ChartCard.vue';
-import BarChart from '@ahmad-chebbo/tessera-ui/Components/BarChart.vue';
-import LineChart from '@ahmad-chebbo/tessera-ui/Components/LineChart.vue';
-import DatePicker from '@ahmad-chebbo/tessera-ui/Components/DatePicker.vue';
-import PeriodPresets from '@ahmad-chebbo/tessera-ui/Components/PeriodPresets.vue';
+import Select from '@tessera/tessera-ui/Components/Select.vue';
+import DataTable from '@tessera/tessera-ui/Components/DataTable.vue';
+import ChartCard from '@tessera/tessera-ui/Components/ChartCard.vue';
+import BarChart from '@tessera/tessera-ui/Components/BarChart.vue';
+import LineChart from '@tessera/tessera-ui/Components/LineChart.vue';
+import DatePicker from '@tessera/tessera-ui/Components/DatePicker.vue';
+import PeriodPresets from '@tessera/tessera-ui/Components/PeriodPresets.vue';
 
 const props = defineProps({
     net: { type: Object, default: null },

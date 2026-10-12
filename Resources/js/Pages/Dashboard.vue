@@ -6,14 +6,14 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import BranchFilter from '@/Components/BranchFilter.vue';
 import { useCurrency } from '@/Composables/useCurrency';
 import { Building, CircleDollarSign, FileText, Package } from 'lucide-vue-next';
-import DataTable from '@ahmad-chebbo/tessera-ui/Components/DataTable.vue';
-import ChartCard from '@ahmad-chebbo/tessera-ui/Components/ChartCard.vue';
-import { categoryLabel } from '@ahmad-chebbo/tessera-ui/charts/labels';
-import TrendChart from '@ahmad-chebbo/tessera-ui/Components/TrendChart.vue';
-import BarChart from '@ahmad-chebbo/tessera-ui/Components/BarChart.vue';
-import DoughnutChart from '@ahmad-chebbo/tessera-ui/Components/DoughnutChart.vue';
-import FilterTabs from '@ahmad-chebbo/tessera-ui/Components/FilterTabs.vue';
-import StatCard from '@ahmad-chebbo/tessera-ui/Components/StatCard.vue';
+import DataTable from '@tessera/tessera-ui/Components/DataTable.vue';
+import ChartCard from '@tessera/tessera-ui/Components/ChartCard.vue';
+import { categoryLabel } from '@tessera/tessera-ui/charts/labels';
+import TrendChart from '@tessera/tessera-ui/Components/TrendChart.vue';
+import BarChart from '@tessera/tessera-ui/Components/BarChart.vue';
+import DoughnutChart from '@tessera/tessera-ui/Components/DoughnutChart.vue';
+import FilterTabs from '@tessera/tessera-ui/Components/FilterTabs.vue';
+import StatCard from '@tessera/tessera-ui/Components/StatCard.vue';
 import { indexWidgets } from '@/utils/widgets';
 
 const props = defineProps({
@@ -49,8 +49,8 @@ const { t } = useI18n();
 
 const widgetComponents = indexWidgets({
     ...import.meta.glob('/app/Modules/*/Resources/js/Widgets/*.vue'),
-    ...import.meta.glob('/vendor/ahmad-chebbo/*/Resources/js/Widgets/*.vue'),
-    ...import.meta.glob('/vendor/ahmad-chebbo/*/modules/*/Resources/js/Widgets/*.vue'),
+    ...import.meta.glob('/vendor/tessera/*/Resources/js/Widgets/*.vue'),
+    ...import.meta.glob('/vendor/tessera/*/modules/*/Resources/js/Widgets/*.vue'),
 });
 const tableColumns2 = computed(() => [
     { key: 'col0', label: 'Order #', cellClass: 'text-sm font-medium text-fg' },
