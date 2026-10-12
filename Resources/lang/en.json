@@ -1,0 +1,79 @@
+{
+    "reports": {
+        "title": "Reports",
+        "salesReport": "Sales Report",
+        "itemsSalesReport": "Items Sales Report",
+        "profitReport": "Profit Report",
+        "stockReport": "Stock Report",
+        "dailySales": "Daily Sales",
+        "dateRange": "Date Range",
+        "generateReport": "Generate Report",
+        "exportPdf": "Export PDF",
+        "exportExcel": "Export Excel",
+        "totalSales": "Total Sales",
+        "totalRevenue": "Total Revenue",
+        "totalCost": "Total Cost",
+        "totalProfit": "Total Profit",
+        "profitMargin": "Profit Margin",
+        "margin": "Margin",
+        "totalOrders": "Total Orders",
+        "totalQuantity": "Total Qty Sold",
+        "distinctProducts": "Products",
+        "averageOrder": "Average Order",
+        "analyzeSales": "Analyze your sales performance",
+        "analyzeItemSales": "Sales breakdown by product",
+        "analyzeProfit": "Revenue vs cost analysis by product",
+        "noData": "No data available",
+        "orders": "orders",
+        "unitsSold": "units sold"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "todaySales": "Today's Sales",
+        "todayOrders": "Today's Orders",
+        "averageOrderValue": "Average Order Value",
+        "lowStockItems": "Low Stock Items",
+        "recentOrders": "Recent Orders",
+        "topProducts": "Top Products",
+        "salesOverview": "Sales Overview",
+        "quickActions": "Quick Actions",
+        "openPos": "Open POS",
+        "viewReports": "View Reports",
+        "manageProducts": "Manage Products"
+    },
+    "analytics": {
+        "title": "Analytics",
+        "period": "{count} days",
+        "revenue": "Revenue",
+        "orders": "Orders",
+        "averageOrder": "Average order",
+        "vsPrevious": "vs previous period",
+        "noPrevious": "No sales in the previous period",
+        "salesTrend": "Sales trend",
+        "salesTrendDesc": "Revenue and orders per day",
+        "paymentSplit": "Paid vs on credit",
+        "paymentSplitDesc": "Money collected and sales on credit",
+        "paid": "Paid",
+        "credit": "On credit",
+        "topProducts": "Top products",
+        "topProductsRevenueDesc": "By revenue",
+        "topProductsProfitDesc": "By profit",
+        "byCategory": "Sales by category",
+        "byCategoryDesc": "Share of revenue",
+        "profitTrend": "Revenue, cost and profit",
+        "profitTrendDesc": "Per day in the selected range",
+        "cost": "Cost",
+        "profit": "Profit"
+    },
+    "roles": {
+        "groups": {
+            "reports": "Reports"
+        }
+    },
+    "expenses": {
+        "discountsCard": "Discounts",
+        "includeExpenses": "Include expenses",
+        "netProfitCard": "Net profit after expenses",
+        "netUnavailable": "Net profit is shown for the whole business. Clear the category and search filters to see it."
+    }
+}

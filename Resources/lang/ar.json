@@ -1,0 +1,79 @@
+{
+    "reports": {
+        "title": "التقارير",
+        "salesReport": "تقرير المبيعات",
+        "itemsSalesReport": "تقرير مبيعات الأصناف",
+        "profitReport": "تقرير الأرباح",
+        "stockReport": "تقرير المخزون",
+        "dailySales": "المبيعات اليومية",
+        "dateRange": "نطاق التاريخ",
+        "generateReport": "إنشاء التقرير",
+        "exportPdf": "تصدير PDF",
+        "exportExcel": "تصدير Excel",
+        "totalSales": "إجمالي المبيعات",
+        "totalRevenue": "إجمالي الإيرادات",
+        "totalCost": "إجمالي التكاليف",
+        "totalProfit": "إجمالي الأرباح",
+        "profitMargin": "هامش الربح",
+        "margin": "الهامش",
+        "totalOrders": "إجمالي الطلبات",
+        "totalQuantity": "إجمالي الكميات المباعة",
+        "distinctProducts": "المنتجات",
+        "averageOrder": "متوسط الطلب",
+        "analyzeSales": "تحليل أداء المبيعات",
+        "analyzeItemSales": "تفصيل المبيعات حسب المنتج",
+        "analyzeProfit": "تحليل الإيرادات مقابل التكاليف",
+        "noData": "لا توجد بيانات",
+        "orders": "طلبات",
+        "unitsSold": "وحدة مباعة"
+    },
+    "dashboard": {
+        "title": "لوحة التحكم",
+        "todaySales": "مبيعات اليوم",
+        "todayOrders": "طلبات اليوم",
+        "averageOrderValue": "متوسط قيمة الطلب",
+        "lowStockItems": "منتجات منخفضة المخزون",
+        "recentOrders": "أحدث الطلبات",
+        "topProducts": "أفضل المنتجات",
+        "salesOverview": "نظرة عامة على المبيعات",
+        "quickActions": "إجراءات سريعة",
+        "openPos": "فتح نقطة البيع",
+        "viewReports": "عرض التقارير",
+        "manageProducts": "إدارة المنتجات"
+    },
+    "analytics": {
+        "title": "التحليلات",
+        "period": "{count} يوم",
+        "revenue": "الإيرادات",
+        "orders": "الطلبات",
+        "averageOrder": "متوسط الطلب",
+        "vsPrevious": "مقارنة بالفترة السابقة",
+        "noPrevious": "لا توجد مبيعات في الفترة السابقة",
+        "salesTrend": "اتجاه المبيعات",
+        "salesTrendDesc": "الإيرادات والطلبات يومياً",
+        "paymentSplit": "مدفوع مقابل آجل",
+        "paymentSplitDesc": "المبالغ المحصلة والمبيعات الآجلة",
+        "paid": "مدفوع",
+        "credit": "آجل",
+        "topProducts": "أفضل المنتجات",
+        "topProductsRevenueDesc": "حسب الإيرادات",
+        "topProductsProfitDesc": "حسب الربح",
+        "byCategory": "المبيعات حسب الفئة",
+        "byCategoryDesc": "حصة الإيرادات",
+        "profitTrend": "الإيرادات والتكلفة والربح",
+        "profitTrendDesc": "يومياً ضمن النطاق المحدد",
+        "cost": "التكلفة",
+        "profit": "الربح"
+    },
+    "roles": {
+        "groups": {
+            "reports": "التقارير"
+        }
+    },
+    "expenses": {
+        "discountsCard": "الخصومات",
+        "includeExpenses": "احتساب المصروفات",
+        "netProfitCard": "صافي الربح بعد المصروفات",
+        "netUnavailable": "يظهر صافي الربح للنشاط كله. أزل فلاتر الفئة والبحث لعرضه."
+    }
+}
