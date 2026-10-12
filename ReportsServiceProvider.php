@@ -20,7 +20,7 @@ class ReportsServiceProvider extends ModuleServiceProvider
         return new ModuleManifest(
             key: 'reports',
             name: 'Reports',
-            requires: ['catalog', 'tenant', 'sales'],
+            requires: ['catalog', 'tenant', 'orders'],
         );
     }
 

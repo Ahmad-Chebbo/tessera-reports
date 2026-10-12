@@ -4,10 +4,10 @@ namespace App\Modules\Reports\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Orders\Enums\OrderStatus;
+use App\Modules\Orders\Models\Order;
 use App\Modules\Reports\Http\Requests\DashboardRequest;
 use App\Modules\Reports\Services\SalesAnalyticsService;
-use App\Modules\Sales\Enums\OrderStatus;
-use App\Modules\Sales\Models\Order;
 use App\Modules\Team\Models\User;
 use App\Modules\Tenant\Models\Branch;
 use App\Modules\Tenant\Services\BranchAccess;

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Reports\Services;
 
-use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Orders\Models\OrderItem;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 

@@ -2,9 +2,9 @@
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Orders\Enums\OrderStatus;
+use App\Modules\Orders\Models\Order;
 use App\Modules\Reports\Services\SalesAnalyticsService;
-use App\Modules\Sales\Enums\OrderStatus;
-use App\Modules\Sales\Models\Order;
 use App\Modules\Team\Models\User;
 use App\Modules\Tenant\Models\Branch;
 use App\Modules\Tenant\Models\Tenant;

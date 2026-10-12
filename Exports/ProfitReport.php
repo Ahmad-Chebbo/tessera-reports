@@ -2,7 +2,7 @@
 
 namespace App\Modules\Reports\Exports;
 
-use App\Modules\Sales\Models\OrderItem;
+use App\Modules\Orders\Models\OrderItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Tessera\Engine\Exports\Column;

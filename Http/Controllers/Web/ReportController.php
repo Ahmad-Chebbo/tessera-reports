@@ -4,10 +4,10 @@ namespace App\Modules\Reports\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Category;
+use App\Modules\Orders\Models\Order;
+use App\Modules\Orders\Models\OrderItem;
 use App\Modules\Reports\Http\Requests\ReportRequest;
 use App\Modules\Reports\Services\SalesAnalyticsService;
-use App\Modules\Sales\Models\Order;
-use App\Modules\Sales\Models\OrderItem;
 use App\Modules\Tenant\Services\BranchAccess;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
